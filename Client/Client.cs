@@ -11,6 +11,7 @@ namespace Client
 
         static void Main(string[] args)
         {
+            Console.WriteLine("This is Client");
             socket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"),1234);
             try

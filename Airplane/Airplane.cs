@@ -3,24 +3,24 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Server
+namespace Airplane
 {
-    class Server
+    class Airplane
     {
-        static byte[] buffer { get; set; }
         static Socket socket;
-
+        static byte[] buffer { get; set; }
         static void Main(string[] args)
         {
+            Console.WriteLine("This is Airplane Server");
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Bind(new IPEndPoint(0, 1234));
+            socket.Bind(new IPEndPoint(0, 3000));
             socket.Listen(100);
             Socket accepted = socket.Accept();
-
             int j = 0;
-            while (j < 3) {
+            while (j < 3)
+            {
 
- 
+
                 buffer = new byte[accepted.SendBufferSize];
                 int bytesRead = accepted.Receive(buffer);
                 byte[] formatted = new byte[bytesRead];
@@ -30,11 +30,14 @@ namespace Server
 
                 }
                 string strData = Encoding.ASCII.GetString(formatted);
+                string[] parameters = strData.Split(' ');
+                //parameters[0] company,parameters[1] date, parameters[0] count
                 Console.WriteLine(strData);
                 j++;
             }
             socket.Close();
             accepted.Close();
+
 
 
         }
