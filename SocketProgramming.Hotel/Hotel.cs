@@ -2,21 +2,21 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-
-
-namespace Airplane
+using System.Linq;
+using SocketProgramming.Hotel;
+namespace Hotel
 {
-    class Airplane
+    class Hotel
     {
         
         static Socket socket;
-        static byte[] buffer { get; set; }
+        static byte[]  buffer { get; set;}
+        
         static void Main(string[] args)
         {
-
-            Console.WriteLine("This is Airplane Server");
+            Console.WriteLine("This is Hotel Server");
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Bind(new IPEndPoint(0, 3000));
+            socket.Bind(new IPEndPoint(0, 2000));
             socket.Listen(100);
             Socket accepted = socket.Accept();
             int j = 0;
@@ -34,7 +34,28 @@ namespace Airplane
                 }
                 string strData = Encoding.ASCII.GetString(formatted);
                 string[] parameters = strData.Split(' ');
+                string hotelName = parameters[0];
+                string date = parameters[1];
+
+                using (HotelEntities hoteldb = new HotelEntities())
+                {
+                    int hotel_id = hoteldb.Hotel_table.Where(x => x.Hotel_Name == hotelName && x.Hotel_trip_date == date).FirstOrDefault().Hotel_ID;
+                    Hotel_table hotel = hoteldb.Hotel_table.Find(hotel_id);
+                    int availableRooms = hotel.available_Room;
+                    if (int.Parse(parameters[2]) > availableRooms)
+                    {
+                        Console.WriteLine("Not available");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Available");
+
+                    }
+
+                }
                 //parameters[0] company,parameters[1] date, parameters[0] count
+
+
                 Console.WriteLine(strData);
                 j++;
             }

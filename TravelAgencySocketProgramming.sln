@@ -3,13 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29609.76
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TravelAgency", "Server\TravelAgency.csproj", "{A55717FF-5B15-401E-8A6C-704031499F11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TravelAgency.core", "Server\TravelAgency.core.csproj", "{A55717FF-5B15-401E-8A6C-704031499F11}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client\Client.csproj", "{CD5792FF-9859-4CF2-8EB8-A77E3C243AC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client.core", "Client\Client.core.csproj", "{CD5792FF-9859-4CF2-8EB8-A77E3C243AC5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Airplane", "Airplane\Airplane.csproj", "{5E31C6A1-1F47-45AE-A412-370ED9F440E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Airplane.core", "Airplane\Airplane.core.csproj", "{5E31C6A1-1F47-45AE-A412-370ED9F440E6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hotel", "Hotel\Hotel.csproj", "{49F98141-34EB-4AAC-B204-4CDCCD29E782}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hotel.core", "Hotel\Hotel.core.csproj", "{49F98141-34EB-4AAC-B204-4CDCCD29E782}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketProgramming.Client", "TravelAgency.Client\SocketProgramming.Client.csproj", "{14A38067-057F-45D8-A7D0-0547F16DB045}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketProgramming.TravelAgency", "SocketProgramming.TravelAgency\SocketProgramming.TravelAgency.csproj", "{098B8F3A-3FE1-42FA-9ED8-B2DCB6B4FBD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketProgramming.Airplane", "SocketProgramming.Airline\SocketProgramming.Airplane.csproj", "{A01B4718-0251-4C23-8184-2E873F0F652C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketProgramming.Hotel", "SocketProgramming.Hotel\SocketProgramming.Hotel.csproj", "{6F5B6F6B-D2DA-4041-AFB1-247C6B0283C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +41,22 @@ Global
 		{49F98141-34EB-4AAC-B204-4CDCCD29E782}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49F98141-34EB-4AAC-B204-4CDCCD29E782}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49F98141-34EB-4AAC-B204-4CDCCD29E782}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14A38067-057F-45D8-A7D0-0547F16DB045}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14A38067-057F-45D8-A7D0-0547F16DB045}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14A38067-057F-45D8-A7D0-0547F16DB045}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14A38067-057F-45D8-A7D0-0547F16DB045}.Release|Any CPU.Build.0 = Release|Any CPU
+		{098B8F3A-3FE1-42FA-9ED8-B2DCB6B4FBD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{098B8F3A-3FE1-42FA-9ED8-B2DCB6B4FBD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{098B8F3A-3FE1-42FA-9ED8-B2DCB6B4FBD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{098B8F3A-3FE1-42FA-9ED8-B2DCB6B4FBD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A01B4718-0251-4C23-8184-2E873F0F652C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A01B4718-0251-4C23-8184-2E873F0F652C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A01B4718-0251-4C23-8184-2E873F0F652C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A01B4718-0251-4C23-8184-2E873F0F652C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F5B6F6B-D2DA-4041-AFB1-247C6B0283C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F5B6F6B-D2DA-4041-AFB1-247C6B0283C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F5B6F6B-D2DA-4041-AFB1-247C6B0283C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F5B6F6B-D2DA-4041-AFB1-247C6B0283C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
