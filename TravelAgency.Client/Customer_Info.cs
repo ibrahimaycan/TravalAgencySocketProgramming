@@ -29,6 +29,7 @@ namespace SocketProgramming.Client
             this.peopleCount = Cus_info[3];
 
         }
+        public Customer_Info() { }
 
     }
 }

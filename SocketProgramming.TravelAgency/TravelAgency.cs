@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace SSocketProgramming.TravelAgency
+namespace SocketProgramming.TravelAgency
 {
     class TravelAgency
     {
@@ -74,8 +74,14 @@ namespace SSocketProgramming.TravelAgency
                 customer_Info = new Customer_Info(strData);
                 
                 string[] parameters = strData.Split(' ');
-                Airplane_socket.Send(Encoding.ASCII.GetBytes(customer_Info.preferedAirline+" "+
-                    customer_Info.Date+" "+ customer_Info.peopleCount));
+                
+               // Airplane_socket.Send(Encoding.ASCII.GetBytes(customer_Info.preferedAirline+" "+
+                 //   customer_Info.Date+" "+ customer_Info.peopleCount));
+                byte[] RequestMessage = GetRequest(customer_Info);
+                Airplane_socket.Send(RequestMessage);
+                byte[] ReceivedMessage=new byte[2048];
+                Airplane_socket.Receive(ReceivedMessage);
+                Console.WriteLine("ReceivedMessage=\n" + Encoding.ASCII.GetString(ReceivedMessage));
                 Hotel_socket.Send(Encoding.ASCII.GetBytes(customer_Info.preferedHotel + " " +
                     customer_Info.Date + " " + customer_Info.peopleCount));
                 Console.WriteLine(strData);
@@ -90,15 +96,17 @@ namespace SSocketProgramming.TravelAgency
 
         //TODO check port number.
         //Check header
-        private byte[] generateGetRequest(Customer_Info customer_Info)
+        private static byte[] GetRequest(Customer_Info customer_Info)
         {
-            string host = "127.0.0.1";
-            
-            int port = 5000;
-            string header = "";
-            string body = "preferedHotel=" + customer_Info.preferedHotel + "+preferedAirline=" + customer_Info.preferedAirline +
-                "+Date=" + customer_Info.Date + "+peopleCount" + customer_Info.peopleCount;
-            return Encoding.ASCII.GetBytes(body + header + "host=" + host + ":" + port);
+
+            string header = "GET /index.html HTTP/1.1\r\n" +
+                "Host: 127.0.0.1\r\n"+
+                "Date="+DateTime.Now+"\r\n"+
+                "Connection: keep-alive\r\n"+
+                "\r\n";
+            string Entitybody = "preferedHotel:" + customer_Info.preferedHotel + "+preferedAirline:" + customer_Info.preferedAirline +
+                "+Date:" + customer_Info.Date + "+peopleCount:" + customer_Info.peopleCount;
+            return Encoding.ASCII.GetBytes(header+Entitybody);
         }
 
     }

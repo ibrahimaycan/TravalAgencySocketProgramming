@@ -3,8 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Linq;
-using SocketProgramming.Hotel;
-namespace Hotel
+namespace SocketProgramming.Hotel
 {
     class Hotel
     {
