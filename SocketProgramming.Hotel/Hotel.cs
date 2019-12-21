@@ -21,10 +21,10 @@ namespace SocketProgramming.Hotel
             socket.Listen(100);
             Socket accepted = socket.Accept();
             int j = 0;
-            while (j < 3)
+            while (j < 100)
             {
 
-
+                Console.WriteLine(j);
                 buffer = new byte[accepted.SendBufferSize];
                 int bytesRead = accepted.Receive(buffer);
                 byte[] formatted = new byte[bytesRead];
@@ -36,7 +36,8 @@ namespace SocketProgramming.Hotel
                 string strData = Encoding.ASCII.GetString(formatted);
                 Customer_Info customer;
                 string Method_type;
-                ParseRequest(strData,out customer,out Method_type);//Gelen requesti parse ediyoruz
+                string transactionType;
+                ParseRequest(strData,out customer,out Method_type,out transactionType);//Gelen requesti parse ediyoruz
                 //string[] parameters = strData.Split(' ');
                 string HotelName = customer.preferedHotel;
                 string date = customer.Date;
@@ -45,14 +46,17 @@ namespace SocketProgramming.Hotel
                 //string[] parameters = strData.Split(' ');
                 //string hotelName = parameters[0];
                 //string date = parameters[1];
+                #region HILTON
 
+               
                 if (HotelName == "HILTON")
                 {
+                    int trip_id = 0;
                     using (HILTONEntities HotelDatabase = new HILTONEntities())
                     {
                         try
                         {
-                            int trip_id = HotelDatabase.HILTON_table.Where(x => x.Hotel_Name == HotelName && x.Hotel_trip_date == date).FirstOrDefault().Trip_ID;
+                            trip_id = HotelDatabase.HILTON_table.Where(x => x.Hotel_Name == HotelName && x.Hotel_trip_date == date).FirstOrDefault().Trip_ID;
                             HILTON_table hotel = HotelDatabase.HILTON_table.Find(trip_id);
                             int availableRooms = hotel.Available_Room;
                             if (int.Parse(customerNumber) > availableRooms)
@@ -63,31 +67,35 @@ namespace SocketProgramming.Hotel
                             {
                                 accepted.Send(GetResponse(customer, "200", "Place is available"));
                             }
-                            while (true)
-                            {
-                                buffer = new byte[2048];
-                                accepted.Receive(buffer);
-                                ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type);
-                                if (Method_type == "POST")
-                                {
-                                    hotel.Available_Room = hotel.Available_Room - int.Parse(customer.peopleCount);
-                                    HotelDatabase.SaveChanges();
-                                    break;
-                                }
-                            }
                         }
                         catch { }
                     }
+                    buffer = new byte[2048];
+                    accepted.Receive(buffer);
+                    ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type, out transactionType);
+                    if (transactionType == "UPDATE")
+                    {
+                        using (HILTONEntities HotelDatabase = new HILTONEntities())
+                        {
+                            HILTON_table hotel = HotelDatabase.HILTON_table.Find(trip_id);
+                            hotel.Available_Room = hotel.Available_Room - int.Parse(customer.peopleCount);
+                            HotelDatabase.SaveChanges();                            
+                        }
+                    }
 
                 }
+                #endregion
+                #region SWISS
+
 
                 if (HotelName == "SWISS")
                 {
+                    int trip_id = 0;
                     using (SWISSEntities HotelDatabase = new SWISSEntities())
                     {
                         try
                         {
-                            int trip_id = HotelDatabase.SWISS_table.Where(x => x.Hotel_Name == HotelName && x.Hotel_trip_date == date).FirstOrDefault().Trip_ID;
+                            trip_id = HotelDatabase.SWISS_table.Where(x => x.Hotel_Name == HotelName && x.Hotel_trip_date == date).FirstOrDefault().Trip_ID;
                             SWISS_table hotel = HotelDatabase.SWISS_table.Find(trip_id);
                             int availableRooms = hotel.Available_Room;
                             if (int.Parse(customerNumber) > availableRooms)
@@ -99,55 +107,28 @@ namespace SocketProgramming.Hotel
                                 accepted.Send(GetResponse(customer, "200", "Place is available"));
                             }
 
-                            while (true)
-                            {
-                                buffer = new byte[2048];
-                                accepted.Receive(buffer);
-                                ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type);
-                                if (Method_type == "POST")
-                                {
-                                    hotel.Available_Room = hotel.Available_Room - int.Parse(customer.peopleCount);
-                                    HotelDatabase.SaveChanges();
-                                    break;
-                                }
-                            }
-
 
                         }
                         catch { }
+                    }
+                    buffer = new byte[2048];
+                    accepted.Receive(buffer);
+                    ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type, out transactionType);
+                    if (transactionType == "UPDATE")
+                    {
+                        using (SWISSEntities HotelDatabase = new SWISSEntities())
+                        {
+                            SWISS_table hotel = HotelDatabase.SWISS_table.Find(trip_id);
+                            hotel.Available_Room = hotel.Available_Room - int.Parse(customer.peopleCount);
+                            HotelDatabase.SaveChanges();
+                            
+                        }
                     }
 
                 }
 
 
-
-
-
-
-                //using (HotelEntities hoteldb = new HotelEntities())
-                //{
-                //    try
-                //    {
-                //        int hotel_id = hoteldb.Hotel_table.Where(x => x.Hotel_Name == HotelName && x.Hotel_trip_date == date).FirstOrDefault().Hotel_ID;
-                //        Hotel_table hotel = hoteldb.Hotel_table.Find(hotel_id);
-                //        int availableRooms = hotel.available_Room;
-                //        if (int.Parse(customerNumber) > availableRooms)
-                //        {
-                //            accepted.Send(GetResponse(customer, "404", "No available Place"));
-                //        }
-                //        else
-                //        {
-                //            accepted.Send(GetResponse(customer, "200", "No available Place"));
-
-                //        }
-                //    }
-                //    catch { }
-
-                //}
-                //parameters[0] company,parameters[1] date, parameters[0] count
-
-
-                //Console.WriteLine(strData);
+                #endregion
                 j++;
             }
             socket.Close();

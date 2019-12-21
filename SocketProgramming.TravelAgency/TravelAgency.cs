@@ -20,7 +20,7 @@ namespace SocketProgramming.TravelAgency
             socket.Bind(new IPEndPoint(0, 1234));
             socket.Listen(100);
             Socket accepted = socket.Accept();
-
+            #region socketConnection
             //Airplane Socket connection
             Airplane_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3000);
@@ -35,10 +35,6 @@ namespace SocketProgramming.TravelAgency
                 Main(args);
             }
 
-
-
-
-
             //Hotel socket connection
             Hotel_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             localEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 2000);
@@ -52,15 +48,13 @@ namespace SocketProgramming.TravelAgency
                 Console.WriteLine("Unable to Connect Hotel Server");
                 Main(args);
             }
-
-
-
-
+            #endregion
+           
             Customer_Info customer_Info = null;
             int j = 0;
-            while (j < 3) {
+            while (j < 100) {
 
- 
+                Console.WriteLine(j);
                 buffer = new byte[accepted.SendBufferSize];
                 int bytesRead = accepted.Receive(buffer);//Clienttan alıyo
                 byte[] formatted = new byte[bytesRead];
@@ -94,6 +88,20 @@ namespace SocketProgramming.TravelAgency
                         Airplane_socket.Send(GetRequest(customer_Info, "POST","UPDATE"));
                         Hotel_socket.Send(GetRequest(customer_Info, "POST","UPDATE"));
                         break;
+                    }
+                    if (AirplaneResponseCode == "404" && HotelResponseCode == "200")
+                    {
+                        Airplane_socket.Send(GetRequest(customer_Info, "GET", "CHECKOTHER"));
+                        ReceivedMessage = new byte[2048];
+                        Airplane_socket.Receive(ReceivedMessage);//HTTP tipinde Response kodu
+                        ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out AirplaneResponseCode);//Response kodu çekiyo
+                        if (AirplaneResponseCode == "200")
+                        {
+                            Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                            Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));                           
+                        }
+                        break;
+
                     }
 
                 }

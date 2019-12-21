@@ -25,7 +25,8 @@ namespace SocketProgramming.Client
                 Main(args);
             }
             int i = 0;
-            while (i<3) {
+            while (i<100) {
+                Console.WriteLine(i);
                 Console.WriteLine("Enter Preferred Hotel");
                 string hotelName = Console.ReadLine();
                 byte[] hotelNamedata = Encoding.ASCII.GetBytes(hotelName);

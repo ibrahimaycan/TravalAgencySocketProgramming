@@ -52,24 +52,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AirlineModel.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AirlineModel.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="AirlineModel.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AirlineModel.tt</DependentUpon>
-    </Compile>
-    <Compile Include="AirlineModel.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AirlineModel.edmx</DependentUpon>
-    </Compile>
-    <Compile Include="airline_table.cs">
-      <DependentUpon>AirlineModel.tt</DependentUpon>
-    </Compile>
     <Compile Include="Airplane.cs" />
     <Compile Include="Model1.Context.cs">
       <AutoGen>True</AutoGen>
@@ -110,13 +92,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EntityDeploy Include="AirlineModel.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>AirlineModel.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <None Include="AirlineModel.edmx.diagram">
-      <DependentUpon>AirlineModel.edmx</DependentUpon>
-    </None>
     <None Include="App.config" />
     <EntityDeploy Include="THYModel.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
@@ -141,16 +116,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AirlineModel.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>AirlineModel.Context.cs</LastGenOutput>
-      <DependentUpon>AirlineModel.edmx</DependentUpon>
-    </Content>
-    <Content Include="AirlineModel.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>AirlineModel.edmx</DependentUpon>
-      <LastGenOutput>AirlineModel.cs</LastGenOutput>
-    </Content>
     <Content Include="Model1.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>THYModel.edmx</DependentUpon>
