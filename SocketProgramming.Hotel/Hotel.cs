@@ -12,7 +12,7 @@ namespace SocketProgramming.Hotel
         
         static Socket socket;
         static byte[]  buffer { get; set;}
-        
+
         static void Main(string[] args)
         {
             Console.WriteLine("This is Hotel Server");
@@ -37,18 +37,13 @@ namespace SocketProgramming.Hotel
                 Customer_Info customer;
                 string Method_type;
                 string transactionType;
-                ParseRequest(strData,out customer,out Method_type,out transactionType);//Gelen requesti parse ediyoruz
-                //string[] parameters = strData.Split(' ');
+                ParseRequest(strData, out customer, out Method_type, out transactionType);//Gelen requesti parse ediyoruz
                 string HotelName = customer.preferedHotel;
                 string date = customer.Date;
                 string customerNumber = customer.peopleCount;
-
-                //string[] parameters = strData.Split(' ');
-                //string hotelName = parameters[0];
-                //string date = parameters[1];
                 #region HILTON
 
-               
+
                 if (HotelName == "HILTON")
                 {
                     int trip_id = 0;
@@ -79,10 +74,35 @@ namespace SocketProgramming.Hotel
                         {
                             HILTON_table hotel = HotelDatabase.HILTON_table.Find(trip_id);
                             hotel.Available_Room = hotel.Available_Room - int.Parse(customer.peopleCount);
-                            HotelDatabase.SaveChanges();                            
+                            HotelDatabase.SaveChanges();
                         }
                     }
-
+                    if (transactionType == "CHECKOTHER")
+                    {
+                        using (SWISSEntities HotelDatabase = new SWISSEntities())
+                        {
+                            trip_id = HotelDatabase.SWISS_table.Where(x => x.Hotel_trip_date == date).FirstOrDefault().Trip_ID;
+                            SWISS_table hotel = HotelDatabase.SWISS_table.Find(trip_id);
+                            int availableRoom = hotel.Available_Room;
+                            if (int.Parse(customerNumber) > availableRoom)
+                            {
+                                accepted.Send(GetResponse(customer, "404", "No available Placa"));
+                            }
+                            else
+                            {
+                                accepted.Send(GetResponse(customer, "200", "Place is available"));
+                            }
+                            buffer = new byte[2048];
+                            accepted.Receive(buffer);
+                            ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type, out transactionType);
+                            if (transactionType == "UPDATE")
+                            {
+                                hotel = HotelDatabase.SWISS_table.Find(trip_id);
+                                hotel.Available_Room = hotel.Available_Room - int.Parse(customer.peopleCount);
+                                HotelDatabase.SaveChanges();
+                            }
+                        }
+                    }
                 }
                 #endregion
                 #region SWISS
@@ -121,23 +141,47 @@ namespace SocketProgramming.Hotel
                             SWISS_table hotel = HotelDatabase.SWISS_table.Find(trip_id);
                             hotel.Available_Room = hotel.Available_Room - int.Parse(customer.peopleCount);
                             HotelDatabase.SaveChanges();
-                            
+
                         }
                     }
+                    if (transactionType == "CHECKOTHER")
+                    {
+                        using (HILTONEntities HotelDatabase = new HILTONEntities())
+                        {
+                            trip_id = HotelDatabase.HILTON_table.Where(x => x.Hotel_trip_date == date).FirstOrDefault().Trip_ID;
+                            HILTON_table hotel = HotelDatabase.HILTON_table.Find(trip_id);
+                            int availableRoom = hotel.Available_Room;
+                            if (int.Parse(customerNumber) > availableRoom)
+                            {
+                                accepted.Send(GetResponse(customer, "404", "No available Placa"));
+                            }
+                            else
+                            {
+                                accepted.Send(GetResponse(customer, "200", "Place is available"));
+                            }
+                            buffer = new byte[2048];
+                            accepted.Receive(buffer);
+                            ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type, out transactionType);
+                            if (transactionType == "UPDATE")
+                            {
+                                hotel = HotelDatabase.HILTON_table.Find(trip_id);
+                                hotel.Available_Room = hotel.Available_Room - int.Parse(customer.peopleCount);
+                                HotelDatabase.SaveChanges();
+                            }
+                        }
 
+
+
+                    }
                 }
-
 
                 #endregion
                 j++;
-            }
+            }   
             socket.Close();
             accepted.Close();
-
-
-
+            
         }
-
         private static void ParseRequest(string request,out Customer_Info customer, out string method,out string transactionType)
         {
          //   Console.WriteLine(request);

@@ -103,6 +103,39 @@ namespace SocketProgramming.TravelAgency
                         break;
 
                     }
+                    if (AirplaneResponseCode == "200" && HotelResponseCode == "404")
+                    {
+                        Hotel_socket.Send(GetRequest(customer_Info, "GET", "CHECKOTHER"));
+                        ReceivedMessage = new byte[2048];
+                        Hotel_socket.Receive(ReceivedMessage);//HTTP tipinde Response kodu
+                        ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out HotelResponseCode);//Response kodu çekiyo
+                        if (HotelResponseCode == "200")
+                        {
+                            Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                            Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                        }
+                        break;
+
+                    }
+                    if (AirplaneResponseCode == "404" && HotelResponseCode == "404")
+                    {
+                        Airplane_socket.Send(GetRequest(customer_Info, "GET", "CHECKOTHER"));
+                        ReceivedMessage = new byte[2048];
+                        Airplane_socket.Receive(ReceivedMessage);//HTTP tipinde Response kodu
+                        ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out AirplaneResponseCode);//Response kodu çekiyo
+                        if (AirplaneResponseCode == "200")
+                        {
+                            Hotel_socket.Send(GetRequest(customer_Info, "GET", "CHECKOTHER"));
+                            ReceivedMessage = new byte[2048];
+                            Hotel_socket.Receive(ReceivedMessage);//HTTP tipinde Response kodu
+                            ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out HotelResponseCode);//Response kodu çekiyo
+                            if (HotelResponseCode == "200")
+                            {
+                                Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                                Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                            }
+                        }
+                    }
 
                 }
                 
