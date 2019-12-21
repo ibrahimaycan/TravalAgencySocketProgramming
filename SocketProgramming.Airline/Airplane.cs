@@ -33,31 +33,118 @@ namespace SocketProgramming.Airplane
 
                 }
                 string strData = Encoding.ASCII.GetString(formatted);
-                Customer_Info customer = ParseRequest(strData);
+                Console.WriteLine(strData);
+                Customer_Info customer;
+                string Method_type;
+                string transactionType;
+                ParseRequest(strData,out customer,out Method_type,out transactionType);//Gelen requesti parse ediyoruz
+                Console.WriteLine("Transaction type= " + transactionType);
                 //string[] parameters = strData.Split(' ');
                 string airlineName = customer.preferedAirline;
                 string date = customer.Date;
                 string customerNumber = customer.peopleCount;
 
                 ////id yi çekme ve kontrol
-                using(airlineEntities airlinedb = new airlineEntities())
+                ///
+                if (airlineName == "THY")
                 {
-                    int plane_id = airlinedb.airline_table.Where(x => x.airline_Name == airlineName && x.trip_date == date).FirstOrDefault().airline_ID;
-                    airline_table plane = airlinedb.airline_table.Find(plane_id);
-                    int availableSeats = plane.available_Seats;
-                    if (int.Parse(customerNumber) > availableSeats)
+                    using (THYEntities airlineDatabase = new THYEntities())
                     {
-                        accepted.Send(GetResponse(customer, "404", "No available Place"));
-                    }
-                    else
-                    {
-                        accepted.Send(GetResponse(customer, "200", "Place is available"));
+                        try
+                        {
+                            int trip_id = airlineDatabase.THY_table.Where(x => x.Airline_Name == airlineName && x.trip_date == date).FirstOrDefault().trip_ID;
+                            THY_table plane = airlineDatabase.THY_table.Find(trip_id);
+                            int availableSeats = plane.available_Seats;
+                            if (int.Parse(customerNumber) > availableSeats)
+                            {
+                                accepted.Send(GetResponse(customer, "404", "No available Place"));
+                            }
+                            else
+                            {
+                                accepted.Send(GetResponse(customer, "200", "Place is available"));
+                            }
 
+                            while (true)
+                            {
+                                buffer = new byte[2048];
+                                accepted.Receive(buffer);
+                                ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type,out transactionType);
+                                if (Method_type == "POST")
+                                {
+                                    plane.available_Seats = plane.available_Seats - int.Parse(customer.peopleCount);
+                                    airlineDatabase.SaveChanges();
+                                    break;
+                                }
+                            }
+                           // Console.WriteLine(Encoding.ASCII.GetString(buffer));
+                           
+                        }
+                        catch { }
                     }
-
                 }
 
-                Console.WriteLine(strData);
+                if (airlineName == "PEGASUS")
+                {
+                    using (PEGASUSEntities airlineDatabase = new PEGASUSEntities())
+                    {
+                        try
+                        {
+                            int trip_id = airlineDatabase.PEGASUS_table.Where(x => x.Airline_Name == airlineName && x.trip_date == date).FirstOrDefault().trip_ID;
+                            PEGASUS_table plane = airlineDatabase.PEGASUS_table.Find(trip_id);
+                            int availableSeats = plane.available_Seats;
+                            if (int.Parse(customerNumber) > availableSeats)
+                            {
+                                accepted.Send(GetResponse(customer, "404", "No available Place"));
+                            }
+                            else
+                            {
+                                accepted.Send(GetResponse(customer, "200", "Place is available"));
+                            }
+
+                            while (true)
+                            {
+                                buffer = new byte[2048];
+                                accepted.Receive(buffer);
+                                ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type,out transactionType);
+                                if (Method_type == "POST")
+                                {
+                                    plane.available_Seats = plane.available_Seats - int.Parse(customer.peopleCount);
+                                    airlineDatabase.SaveChanges();
+                                    break;
+                                }
+                            }
+
+                        }
+                        catch { }
+                    }
+                }
+                //using (airlineEntities airlinedb = new airlineEntities())
+                //{
+                //    try
+                //    {
+                //        int plane_id = airlinedb.airline_table.Where(x => x.airline_Name == airlineName && x.trip_date == date).FirstOrDefault().airline_ID;
+                //        airline_table plane = airlinedb.airline_table.Find(plane_id);
+                //        int availableSeats = plane.available_Seats;
+                //        if (int.Parse(customerNumber) > availableSeats)
+                //        {
+                //            accepted.Send(GetResponse(customer, "404", "No available Place"));
+                //        }
+                //        else
+                //        {
+                //            accepted.Send(GetResponse(customer, "200", "Place is available"));
+                //        }
+                //    }
+                //    catch { }
+                //}
+
+
+
+
+
+
+
+
+                //Console.WriteLine(strData);
                 j++;
             }
 
@@ -69,18 +156,21 @@ namespace SocketProgramming.Airplane
 
 
         }
-        private static Customer_Info ParseRequest(string request)
+        private static void ParseRequest(string request,out Customer_Info customer,out string method,out string transactionType)
         {
-            Console.WriteLine(request);
+           // Console.WriteLine(request);
             string[] splittedRequest;
             splittedRequest = request.Split('\n');
             string[] userInfo = splittedRequest[splittedRequest.Length - 1].Split('+');
-            Customer_Info customer = new Customer_Info();
+            customer = new Customer_Info();
             customer.preferedHotel = userInfo[0].Split(':')[1];
             customer.preferedAirline = userInfo[1].Split(':')[1];
             customer.Date=userInfo[2].Split(':')[1];
             customer.peopleCount = userInfo[3].Split(':')[1];
-            return customer;
+            method=splittedRequest[0].Split(' ')[0];
+            transactionType = splittedRequest[4].Split(' ')[1];
+        
+            
 
         }
 

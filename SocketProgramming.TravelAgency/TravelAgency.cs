@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SocketProgramming.TravelAgency
 {
-    class TravelAgency
+    public class TravelAgency
     {
         static byte[] buffer { get; set; }
         static Socket socket;
@@ -31,7 +31,7 @@ namespace SocketProgramming.TravelAgency
             }
             catch
             {
-                Console.WriteLine("Unable to Connect");
+                Console.WriteLine("Unable to Connect Airline Server");
                 Main(args);
             }
 
@@ -49,7 +49,7 @@ namespace SocketProgramming.TravelAgency
             }
             catch
             {
-                Console.WriteLine("Unable to Connect");
+                Console.WriteLine("Unable to Connect Hotel Server");
                 Main(args);
             }
 
@@ -62,7 +62,7 @@ namespace SocketProgramming.TravelAgency
 
  
                 buffer = new byte[accepted.SendBufferSize];
-                int bytesRead = accepted.Receive(buffer);
+                int bytesRead = accepted.Receive(buffer);//Clienttan alıyo
                 byte[] formatted = new byte[bytesRead];
                 for (int i = 0; i < bytesRead; i++)
                 {
@@ -70,21 +70,33 @@ namespace SocketProgramming.TravelAgency
 
                 }
 
-                string strData = Encoding.ASCII.GetString(formatted);
+                string strData = Encoding.ASCII.GetString(formatted);///HILTON THY 15/01/2020
                 customer_Info = new Customer_Info(strData);
                 
                 string[] parameters = strData.Split(' ');
-                
-               // Airplane_socket.Send(Encoding.ASCII.GetBytes(customer_Info.preferedAirline+" "+
-                 //   customer_Info.Date+" "+ customer_Info.peopleCount));
-                byte[] RequestMessage = GetRequest(customer_Info);
-                Airplane_socket.Send(RequestMessage);
+                Console.WriteLine(GetRequest(customer_Info, "GET", "CHECK"));
+                Airplane_socket.Send(GetRequest(customer_Info,"GET","CHECK"));//HTTP tipinde gönderilecek mesajı generate ediyo
                 byte[] ReceivedMessage=new byte[2048];
-                Airplane_socket.Receive(ReceivedMessage);
-                Console.WriteLine("ReceivedMessage=\n" + Encoding.ASCII.GetString(ReceivedMessage));
-                Hotel_socket.Send(Encoding.ASCII.GetBytes(customer_Info.preferedHotel + " " +
-                    customer_Info.Date + " " + customer_Info.peopleCount));
-                Console.WriteLine(strData);
+                Airplane_socket.Receive(ReceivedMessage);//HTTP tipinde Response kodu
+                string AirplaneResponseCode;
+                ParseResponse(Encoding.ASCII.GetString(ReceivedMessage),out AirplaneResponseCode);//Response kodu çekiyo
+
+                Hotel_socket.Send(GetRequest(customer_Info,"GET","CHECK"));
+                ReceivedMessage = new byte[2048];
+                Hotel_socket.Receive(ReceivedMessage);
+                string HotelResponseCode;
+                ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out HotelResponseCode);//Response kodu çekiyo
+                                                                                                    // Console.WriteLine("HotelResponseCode"+HotelResponseCode);
+                while (true)
+                {
+                    if (AirplaneResponseCode == "200" && HotelResponseCode == "200")
+                    {
+                        Airplane_socket.Send(GetRequest(customer_Info, "POST","UPDATE"));
+                        Hotel_socket.Send(GetRequest(customer_Info, "POST","UPDATE"));
+                        break;
+                    }
+
+                }
                 
                 j++;
             }
@@ -96,17 +108,33 @@ namespace SocketProgramming.TravelAgency
 
         //TODO check port number.
         //Check header
-        private static byte[] GetRequest(Customer_Info customer_Info)
+        public static byte[] GetRequest(Customer_Info customer_Info,string method_Types,string transactionType)
         {
 
-            string header = "GET /index.html HTTP/1.1\r\n" +
-                "Host: 127.0.0.1\r\n"+
-                "Date="+DateTime.Now+"\r\n"+
-                "Connection: keep-alive\r\n"+
+            string header = method_Types + " /index.html HTTP/1.1\r\n" +
+                "Host: 127.0.0.1 \r\n" +
+                "Date=" + DateTime.Now + " \r\n" +
+                "Connection: keep-alive \r\n" +
+                "TransactionType: " + transactionType + " \r\n"+
                 "\r\n";
             string Entitybody = "preferedHotel:" + customer_Info.preferedHotel + "+preferedAirline:" + customer_Info.preferedAirline +
                 "+Date:" + customer_Info.Date + "+peopleCount:" + customer_Info.peopleCount;
             return Encoding.ASCII.GetBytes(header+Entitybody);
+        }
+
+        private static void ParseResponse(string responseMessage,out string responseCode)
+        {
+
+            //"GET 404 HTTP/1.1\r\n" +
+            //    "Host: 127.0.0.1\r\n" +
+            //    "Date=" + DateTime.Now + "\r\n" +
+            //    "Connection: keep-alive\r\n" +
+            //    "\r\n";
+            //"No available Place"
+
+            string[] splittedMessage;
+            splittedMessage = responseMessage.Split(' ');
+            responseCode = splittedMessage[1];
         }
 
     }
