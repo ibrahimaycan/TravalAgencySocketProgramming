@@ -22,6 +22,7 @@ namespace SocketProgramming.Airplane
             int j = 0;
             while (j < 100)
             {
+                j++;
                 Console.WriteLine(j);
                 buffer = new byte[accepted.SendBufferSize];
                 int bytesRead = accepted.Receive(buffer);
@@ -32,7 +33,7 @@ namespace SocketProgramming.Airplane
 
                 }
                 string strData = Encoding.ASCII.GetString(formatted);
-                Console.WriteLine(strData);
+                
                 Customer_Info customer;
                 string Method_type;
                 string transactionType;
@@ -93,11 +94,13 @@ namespace SocketProgramming.Airplane
                             if (int.Parse(customerNumber) > availableSeats)
                             {
                                 accepted.Send(GetResponse(customer, "404", "No available Place"));
+                                continue;
                             }
                             else
                             {
                                 accepted.Send(GetResponse(customer, "200", "Place is available"));
                             }
+                            Console.WriteLine("Gelme");
                             buffer = new byte[2048];
                             accepted.Receive(buffer);
                             ParseRequest(Encoding.ASCII.GetString(buffer), out customer, out Method_type, out transactionType);
@@ -108,7 +111,12 @@ namespace SocketProgramming.Airplane
                                 airlineDatabase.SaveChanges();
                             }                          
                         }
-                    }                   
+                    }
+                    if (transactionType == "DONOTHING")
+                    {
+
+                    }
+
                 }
                 #endregion
 
@@ -126,6 +134,7 @@ namespace SocketProgramming.Airplane
                             if (int.Parse(customerNumber) > availableSeats)
                             {
                                 accepted.Send(GetResponse(customer, "404", "No available Place"));
+                                
                             }
                             else
                             {
@@ -161,6 +170,7 @@ namespace SocketProgramming.Airplane
                             if (int.Parse(customerNumber) > availableSeats)
                             {
                                 accepted.Send(GetResponse(customer, "404", "No available Place"));
+                                continue;
                             }
                             else
                             {
@@ -178,11 +188,15 @@ namespace SocketProgramming.Airplane
                             
                         }
                     }
+                    if (transactionType == "DONOTHING")
+                    {
+
+                    }
                 }
                 #endregion
 
 
-                j++;
+                
             }
 
 

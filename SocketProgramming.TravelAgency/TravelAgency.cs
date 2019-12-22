@@ -53,7 +53,7 @@ namespace SocketProgramming.TravelAgency
             Customer_Info customer_Info = null;
             int j = 0;
             while (j < 100) {
-
+                j++;
                 Console.WriteLine(j);
                 buffer = new byte[accepted.SendBufferSize];
                 int bytesRead = accepted.Receive(buffer);//Clienttan alıyo
@@ -68,7 +68,7 @@ namespace SocketProgramming.TravelAgency
                 customer_Info = new Customer_Info(strData);
                 
                 string[] parameters = strData.Split(' ');
-                Console.WriteLine(GetRequest(customer_Info, "GET", "CHECK"));
+                //Console.WriteLine(GetRequest(customer_Info, "GET", "CHECK"));
                 Airplane_socket.Send(GetRequest(customer_Info,"GET","CHECK"));//HTTP tipinde gönderilecek mesajı generate ediyo
                 byte[] ReceivedMessage=new byte[2048];
                 Airplane_socket.Receive(ReceivedMessage);//HTTP tipinde Response kodu
@@ -79,14 +79,19 @@ namespace SocketProgramming.TravelAgency
                 ReceivedMessage = new byte[2048];
                 Hotel_socket.Receive(ReceivedMessage);
                 string HotelResponseCode;
+                string alternative,alternative_2;
+                byte[] client_Answer = new byte[1];
                 ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out HotelResponseCode);//Response kodu çekiyo
-                                                                                                    // Console.WriteLine("HotelResponseCode"+HotelResponseCode);
+                                                                                                   // Console.WriteLine("HotelResponseCode"+HotelResponseCode);
                 while (true)
                 {
+                    
                     if (AirplaneResponseCode == "200" && HotelResponseCode == "200")
                     {
                         Airplane_socket.Send(GetRequest(customer_Info, "POST","UPDATE"));
                         Hotel_socket.Send(GetRequest(customer_Info, "POST","UPDATE"));
+                        accepted.Send(Encoding.ASCII.GetBytes("++ TICKET RECEIVED "));
+                        accepted.Send(Encoding.ASCII.GetBytes("SUCCESS "));
                         break;
                     }
                     if (AirplaneResponseCode == "404" && HotelResponseCode == "200")
@@ -97,8 +102,38 @@ namespace SocketProgramming.TravelAgency
                         ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out AirplaneResponseCode);//Response kodu çekiyo
                         if (AirplaneResponseCode == "200")
                         {
-                            Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
-                            Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));                           
+                            
+                            //Clienta sor
+                            if (customer_Info.preferedAirline == "THY")
+                                alternative = "PEGASUS";
+                            else
+                                alternative = "THY";
+                            accepted.Send(Encoding.ASCII.GetBytes("There is no available seats on " + customer_Info.preferedAirline +
+                                " Would you prefer " + alternative+" ? "));
+                            accepted.Receive(client_Answer);
+                            if (Encoding.ASCII.GetString(client_Answer) == "Y")
+                            {
+                                Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                                Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                                accepted.Send(Encoding.ASCII.GetBytes("++ TICKET RECEIVED "));
+                                accepted.Send(Encoding.ASCII.GetBytes("SUCCESS "));
+                            }
+                            else
+                            {
+                                Airplane_socket.Send(GetRequest(customer_Info, "POST", "DONOTHING"));
+                                Hotel_socket.Send(GetRequest(customer_Info, "POST", "DONOTHING"));
+                                accepted.Send(Encoding.ASCII.GetBytes("-- TICKET NOT RECEIVED "));
+                                accepted.Send(Encoding.ASCII.GetBytes("FAILED "));
+                            }
+                        }
+                        else
+                        {
+                            Hotel_socket.Send(GetRequest(customer_Info, "GET", "DONOTHING"));
+                            Console.WriteLine("Uygun uçak yok");
+                           // accepted.Send(Encoding.ASCII.GetBytes("-- No Available Flight Try another day"));
+                            accepted.Send(Encoding.ASCII.GetBytes("-- No Available Flight Try another day.\nTICKET NOT RECEIVED. "));
+                            accepted.Send(Encoding.ASCII.GetBytes("FAILED "));
+                            ///Clienta uygun yer yok mesajı gönder
                         }
                         break;
 
@@ -111,8 +146,37 @@ namespace SocketProgramming.TravelAgency
                         ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out HotelResponseCode);//Response kodu çekiyo
                         if (HotelResponseCode == "200")
                         {
-                            Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
-                            Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                            //Clienta sor
+                            if (customer_Info.preferedHotel == "HILTON")
+                                alternative = "SWISS";
+                            else
+                                alternative = "HILTON";
+                            accepted.Send(Encoding.ASCII.GetBytes("There is no available room on " + customer_Info.preferedHotel +
+    " Would you prefer " + alternative + " ? "));
+                            accepted.Receive(client_Answer);
+                            if (Encoding.ASCII.GetString(client_Answer) == "Y")
+                            {
+                                Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                                Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                                accepted.Send(Encoding.ASCII.GetBytes("++ TICKET RECEIVED "));
+                                accepted.Send(Encoding.ASCII.GetBytes("SUCCESS "));
+                            }
+                            else
+                            {
+                                Airplane_socket.Send(GetRequest(customer_Info, "POST", "DONOTHING"));
+                                Hotel_socket.Send(GetRequest(customer_Info, "POST", "DONOTHING"));
+                                accepted.Send(Encoding.ASCII.GetBytes("-- TICKET NOT RECEIVED "));
+                                accepted.Send(Encoding.ASCII.GetBytes("FAILED "));
+                            }
+
+                        }
+                        else
+                        {
+                            Airplane_socket.Send(GetRequest(customer_Info, "GET", "DONOTHING"));
+                            Console.WriteLine("Uygun oda yok");
+                            accepted.Send(Encoding.ASCII.GetBytes("-- No Available Room. Try another day\nTICKET  NOT RECEIVED "));
+                            accepted.Send(Encoding.ASCII.GetBytes("FAILED "));
+                            //Cliente uygun oda yok mesajı
                         }
                         break;
 
@@ -125,21 +189,69 @@ namespace SocketProgramming.TravelAgency
                         ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out AirplaneResponseCode);//Response kodu çekiyo
                         if (AirplaneResponseCode == "200")
                         {
+
                             Hotel_socket.Send(GetRequest(customer_Info, "GET", "CHECKOTHER"));
                             ReceivedMessage = new byte[2048];
                             Hotel_socket.Receive(ReceivedMessage);//HTTP tipinde Response kodu
                             ParseResponse(Encoding.ASCII.GetString(ReceivedMessage), out HotelResponseCode);//Response kodu çekiyo
+                            
                             if (HotelResponseCode == "200")
                             {
-                                Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
-                                Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                                if (customer_Info.preferedAirline == "THY")
+                                    alternative = "PEGASUS";
+                                else
+                                    alternative = "THY";
+                                if (customer_Info.preferedHotel == "HILTON")
+                                    alternative_2 = "SWISS";
+                                else
+                                    alternative_2 = "HILTON";
+
+                                accepted.Send(Encoding.ASCII.GetBytes("There is no available room on " 
+                                    + customer_Info.preferedHotel 
+                                    +" and there is no available seat on "+customer_Info.preferedAirline
+                                    +" Would you prefer " + alternative_2+ " and "+alternative + " ? "));
+                                accepted.Receive(client_Answer);
+
+                                ///CUSTOMERA SOR
+                                if (Encoding.ASCII.GetString(client_Answer) == "Y")
+                                {
+                                    Airplane_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                                    Hotel_socket.Send(GetRequest(customer_Info, "POST", "UPDATE"));
+                                    accepted.Send(Encoding.ASCII.GetBytes("++ TICKET RECEIVED "));
+                                    accepted.Send(Encoding.ASCII.GetBytes("SUCCESS "));
+                                    
+                                }
+                                else
+                                {
+                                    Airplane_socket.Send(GetRequest(customer_Info, "POST", "DONOTHING"));
+                                    Hotel_socket.Send(GetRequest(customer_Info, "POST", "DONOTHING"));
+                                    accepted.Send(Encoding.ASCII.GetBytes("-- TICKET NOT RECEIVED "));
+                                    accepted.Send(Encoding.ASCII.GetBytes("FAILED "));
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Uygun oda yok");
+                                Airplane_socket.Send(GetRequest(customer_Info, "POST", "DONOTHING"));                   
+                                accepted.Send(Encoding.ASCII.GetBytes("-- No Available Room .Try another day\nTICKET NOT RECEIVED "));
+                                accepted.Send(Encoding.ASCII.GetBytes("FAILED "));
+                                //Clienta uygun oda yok mesajı
                             }
                         }
+                        else
+                        {
+                            Hotel_socket.Send(GetRequest(customer_Info, "GET", "DONOTHING"));            
+                            accepted.Send(Encoding.ASCII.GetBytes("-- There is no flight and room.TRY another day. \nTICKET NOT RECEIVED "));
+                            accepted.Send(Encoding.ASCII.GetBytes("FAILED "));
+                            Console.WriteLine("Uygun uçuş yok");
+                            //Clienta uygun uçuş yok mesajı
+                        }
+                        break;
                     }
 
                 }
                 
-                j++;
+                
             }
             socket.Close();
             accepted.Close();

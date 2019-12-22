@@ -23,7 +23,7 @@ namespace SocketProgramming.Hotel
             int j = 0;
             while (j < 100)
             {
-
+                j++;
                 Console.WriteLine(j);
                 buffer = new byte[accepted.SendBufferSize];
                 int bytesRead = accepted.Receive(buffer);
@@ -87,6 +87,7 @@ namespace SocketProgramming.Hotel
                             if (int.Parse(customerNumber) > availableRoom)
                             {
                                 accepted.Send(GetResponse(customer, "404", "No available Placa"));
+                                continue;
                             }
                             else
                             {
@@ -154,6 +155,7 @@ namespace SocketProgramming.Hotel
                             if (int.Parse(customerNumber) > availableRoom)
                             {
                                 accepted.Send(GetResponse(customer, "404", "No available Placa"));
+                                continue;
                             }
                             else
                             {
@@ -169,14 +171,11 @@ namespace SocketProgramming.Hotel
                                 HotelDatabase.SaveChanges();
                             }
                         }
-
-
-
                     }
                 }
 
                 #endregion
-                j++;
+                
             }   
             socket.Close();
             accepted.Close();

@@ -25,8 +25,10 @@ namespace SocketProgramming.Client
                 Main(args);
             }
             int i = 0;
+            byte[] selectChoice = new byte[100];
             while (i<100) {
-                Console.WriteLine(i);
+                i++;
+                //Console.WriteLine(i);
                 Console.WriteLine("Enter Preferred Hotel");
                 string hotelName = Console.ReadLine();
                 byte[] hotelNamedata = Encoding.ASCII.GetBytes(hotelName);
@@ -45,8 +47,33 @@ namespace SocketProgramming.Client
                     " " + dateTime + " " + customerNumber);
 
                 socket.Send(data);
-                Console.Write("data send\r\n");
-                i++;
+                
+                while (true)
+                {
+                    selectChoice = new byte[150];
+                    socket.Receive(selectChoice);
+                    if (Encoding.ASCII.GetString(selectChoice).Split(' ')[0] == "SUCCESS")
+                        break;
+                    else if (Encoding.ASCII.GetString(selectChoice).Split(' ')[0] == "FAILED")
+                    {
+                        break;
+                    }
+                    else if (Encoding.ASCII.GetString(selectChoice).Split(' ')[0] == "++")
+                    {
+                        Console.WriteLine(Encoding.ASCII.GetString(selectChoice));
+                    }
+                    else if (Encoding.ASCII.GetString(selectChoice).Split(' ')[0] == "--")
+                    {
+                        Console.WriteLine(Encoding.ASCII.GetString(selectChoice));
+                    }
+                    else
+                    {
+                        Console.WriteLine(Encoding.ASCII.GetString(selectChoice));
+                        socket.Send(Encoding.ASCII.GetBytes( Console.ReadLine()));
+                    }
+                }
+                //Console.Write("data send\r\n");
+
             }
             Console.Read();
             socket.Close();
