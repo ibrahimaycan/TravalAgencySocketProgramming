@@ -1,4 +1,5 @@
-create database PEGASUS
+create database THY
+use PEGASUS
 create table PEGASUS_table(
 airline_ID int primary key,
 trip_date varchar(50),
